@@ -18,23 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
  * ChangeLog:
-		1.0	- 	Релиз
+		1.0 - Release
 
-		2.0	- 	Полностю переписан плагин.
+		2.0 - Completely rewritten plugin.
 
-		2.1	-	Исправлены все найденые ошибки.
-				Изменена структура файла с цветами.
-				Иправлено сохранение цветов игрока.
-				Добавлены информационные сообщения.
-				Доавблено сохранение состояния пунтка и возобновление при перезаходе.
-		2.2	-	Переименованы все квары.
-				Добавлен квар sm_shop_chat_use_prefix_file.
-		2.2.1 -	Добавлены проверки на существование конфигов.
-		2.2.2 -	Исправлена ошибка с файлом префиксов.
-				Исправлено сохранение префикса.
-				Мелкие фиксы.
-				Изменено меню информации.
-		2.2.3 - Исправлена ошибка, когда клиент мог быть не в игре 442 строка
+		2.1 - Fixed all bugs found.
+				Changed the structure of the file with colours.
+				Fixed saving of player colours.
+				Added informational messages.
+				Added save state of punt and resumption on re-entry.
+		2.2 - Renamed all quars.
+				Added quare sm_shop_chat_use_prefix_file.
+		2.2.1 - Added config existence checks.
+		2.2.2 - Fixed bug with prefix file.
+				Fixed prefix save.
+				Minor fixes.
+				Changed the info menu.
+		2.2.3 - Fixed bug where client could be out of game 442 line
 */
 
 #pragma semicolon 1
@@ -43,6 +43,7 @@
 #include <sdktools_functions>
 #include <basecomm>
 #include <clientprefs>
+#include <multicolors>
 
 #define CATEGORY "Chat"
 #define ITEM1 "Name Color"
@@ -55,8 +56,8 @@ public Plugin:myinfo =
 {
 	name = "[Shop] Name/Prefix/Text Color",
 	description = "Grant player to buy name/prefix/text color",
-	author = "R1KO",
-	version = "2.2.3",
+	author = "R1KO, maxime1907",
+	version = "2.2.4",
 	url = "http://hlmod.ru"
 };
 
@@ -85,34 +86,34 @@ public OnPluginStart()
 {
 	new Handle:hCvar;
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_price", "1000", "Цена цвета ника.")), NamePriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_price", "1000", "Name color price")), NamePriceChange);
 	g_iArrayPrice[NAME_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_sellprice", "1000", "Цена продажи цвета ника. (Запретить продажу: -1)")), NameSellPriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_sellprice", "1000", "Name selling price. (Disable selling: -1)")), NameSellPriceChange);
 	g_iArraySellPrice[NAME_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_duration", "86400", "Длительность использования цвета ника.")), NameDurationChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_duration", "86400", "Duration of use of the colored name")), NameDurationChange);
 	g_iArrayDuration[NAME_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_price", "1000", "Цена цвета сообщений.")), TextPriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_price", "1000", "Chat color price.")), TextPriceChange);
 	g_iArrayPrice[TEXT_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_sellprice", "1000", "Цена продажи цвета сообщений. (Запретить продажу: -1)")), TextSellPriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_sellprice", "1000", "Chat selling price. (Disable selling: -1)")), TextSellPriceChange);
 	g_iArraySellPrice[TEXT_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_duration", "86400", "Длительность использования цвета сообщений.")), TextDurationChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_text_duration", "86400", "Duration of use of the colored chat")), TextDurationChange);
 	g_iArrayDuration[TEXT_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_price", "1000", "Цена префикса и его цвета.")), PrefixPriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_price", "1000", "Tag and Tag color price")), PrefixPriceChange);
 	g_iArrayPrice[PREFIX_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_sellprice", "1000", "Цена продажи префикса и его цвета. (Запретить продажу: -1)")), PrefixSellPriceChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_sellprice", "1000", "Tag and Tag color selling price. (Disable selling: -1)")), PrefixSellPriceChange);
 	g_iArraySellPrice[PREFIX_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_duration", "86400", "Длительность использования префикса и его цвета.")), PrefixDurationChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_prefix_duration", "86400", "Duration of use of the Tag and its color")), PrefixDurationChange);
 	g_iArrayDuration[PREFIX_COLOR] = GetConVarInt(hCvar);
 	
-	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_use_prefix_file", "0", "Разрешить выбрать только префиксы из списка, иначе - сможет указать любой (1 - Вкл., 0 - Выкл)")), UsePrefixFileChange);
+	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_use_prefix_file", "0", "Allow only Tags from the config file to be selected, otherwise - can specify any (1 - On, 0 - Off)")), UsePrefixFileChange);
 	g_bUsePrefixFile = GetConVarBool(hCvar);
 	
 	CloseHandle(hCvar);
@@ -125,7 +126,7 @@ public OnPluginStart()
 	g_hCookie[PREFIX] = RegClientCookie("Shop Prefix", "Prefix", CookieAccess_Public);
 
 	RegConsoleCmd("sm_color", MyColor_CMD);
-	RegConsoleCmd("sm_myprefix", MyPref_CMD);	
+	RegConsoleCmd("sm_myprefix", MyPref_CMD);
 
 	if (Shop_IsStarted()) Shop_Started();
 }
@@ -196,23 +197,23 @@ public OnPluginEnd() Shop_UnregisterMe();
 
 public Shop_Started()
 {
-	new CategoryId:category_id = Shop_RegisterCategory(CATEGORY, "Чат", "");
+	new CategoryId:category_id = Shop_RegisterCategory(CATEGORY, "Chat", "");
 
 	if (Shop_StartItem(category_id, ITEM1))
 	{
-		Shop_SetInfo("Цвет ника", "", g_iArrayPrice[NAME_COLOR], g_iArraySellPrice[NAME_COLOR], Item_Togglable, g_iArrayDuration[NAME_COLOR]);
+		Shop_SetInfo("Name color", "", g_iArrayPrice[NAME_COLOR], g_iArraySellPrice[NAME_COLOR], Item_Togglable, g_iArrayDuration[NAME_COLOR]);
 		Shop_SetCallbacks(OnNameItemRegistered, OnNameColorUsed);
 		Shop_EndItem();
 	}
 	if (Shop_StartItem(category_id, ITEM3))
 	{
-		Shop_SetInfo("Цвет текста", "", g_iArrayPrice[TEXT_COLOR], g_iArraySellPrice[TEXT_COLOR], Item_Togglable, g_iArrayDuration[TEXT_COLOR]);
+		Shop_SetInfo("Text color", "", g_iArrayPrice[TEXT_COLOR], g_iArraySellPrice[TEXT_COLOR], Item_Togglable, g_iArrayDuration[TEXT_COLOR]);
 		Shop_SetCallbacks(OnTextItemRegistered, OnTextColorUsed);
 		Shop_EndItem();
 	}
 	if (Shop_StartItem(category_id, ITEM2))
 	{
-		Shop_SetInfo("Титул и его цвет", "", g_iArrayPrice[PREFIX_COLOR], g_iArraySellPrice[PREFIX_COLOR], Item_Togglable, g_iArrayDuration[PREFIX_COLOR]);
+		Shop_SetInfo("Tag and Tag color", "", g_iArrayPrice[PREFIX_COLOR], g_iArraySellPrice[PREFIX_COLOR], Item_Togglable, g_iArrayDuration[PREFIX_COLOR]);
 		Shop_SetCallbacks(OnPrefixItemRegistered, OnPrefixUsed);
 		Shop_EndItem();
 	}
@@ -244,7 +245,7 @@ public ShopAction:OnNameColorUsed(iClient, CategoryId:category_id, const String:
 	GetClientCookie(iClient, g_hCookie[NAME_COLOR], g_sColors[iClient][NAME_COLOR], sizeof(g_sColors[][]));
 	EditColor(g_sColors[iClient][NAME_COLOR], sizeof(g_sColors[][]));
 	g_bUsed[iClient][NAME_COLOR] = true;
-	PrintToChat(iClient, "\x04[Shop] \x01Чтобы выбрать цвет ника введите в чат \x04!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}To select a color for your name, write in the chatbox {green}!color");
 
 	return Shop_UseOn;
 }
@@ -260,7 +261,7 @@ public ShopAction:OnTextColorUsed(iClient, CategoryId:category_id, const String:
 	GetClientCookie(iClient, g_hCookie[TEXT_COLOR], g_sColors[iClient][TEXT_COLOR], sizeof(g_sColors[][]));
 	EditColor(g_sColors[iClient][TEXT_COLOR], sizeof(g_sColors[][]));
 	g_bUsed[iClient][TEXT_COLOR] = true;
-	PrintToChat(iClient, "\x04[Shop] \x01Чтобы выбрать цвет текста введите в чат \x04!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}To select a text color, write in the chat {green}!color");
 
 	return Shop_UseOn;
 }
@@ -277,10 +278,10 @@ public ShopAction:OnPrefixUsed(iClient, CategoryId:category_id, const String:cat
 	EditColor(g_sColors[iClient][PREFIX_COLOR], sizeof(g_sColors[][]));
 
 	GetClientCookie(iClient, g_hCookie[PREFIX], g_sPrefix[iClient], sizeof(g_sPrefix[]));
-	if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Префикс");
+	if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Tag");
 
 	g_bUsed[iClient][PREFIX_COLOR] = true;
-	PrintToChat(iClient, "\x04[Shop] \x01Чтобы выбрать префикс и его цвет введите в чат \x04!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}To select a Tag and its color, write in the chat {green}!color");
 
 	return Shop_UseOn;
 }
@@ -294,10 +295,10 @@ ParseCFG()
 	decl String:sBuffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "configs/shop/chat_colors.cfg");	
 	
-	if(!FileExists(sBuffer)) SetFailState("Не найден файл %s", sBuffer);
+	if(!FileExists(sBuffer)) SetFailState("File not found: %s", sBuffer);
 	g_hMenuColor = CreateMenu(MenuHandler_Color);
 	SetMenuExitBackButton(g_hMenuColor, true);
-	SetMenuTitle(g_hMenuColor, "Выберите цвет:");
+	SetMenuTitle(g_hMenuColor, "Choose a color:");
 
 	new Handle:ConfigParser = SMC_CreateParser();
 	SMC_SetReaders(ConfigParser, ReadConfig_NewSection, ReadConfig_KeyValue, ReadConfig_EndSection);
@@ -333,11 +334,11 @@ CreatePrefixMenu()
 	if(g_bUsePrefixFile)
 	{
 		SetMenuExitBackButton(g_hMenuPref, true);
-		SetMenuTitle(g_hMenuPref, "Выберите префикс:\n \n");
+		SetMenuTitle(g_hMenuPref, "Choose a Tag:");
 		
 		decl String:sBuffer[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "configs/shop/chat_prefix.cfg");
-		if(!FileExists(sBuffer)) SetFailState("Не найден файл %s", sBuffer);
+		if(!FileExists(sBuffer)) SetFailState("File not found: %s", sBuffer);
 		new Handle:hFile = OpenFile(sBuffer, "r");
 		
 		if (hFile != INVALID_HANDLE)
@@ -348,7 +349,7 @@ CreatePrefixMenu()
 			
 				if (sBuffer[0]) AddMenuItem(g_hMenuPref, sBuffer, sBuffer);
 			}
-		} else SetFailState("Не удалось открыть файл %s", sBuffer);
+		} else SetFailState("Failed to open file: %s", sBuffer);
 
 		CloseHandle(hFile);
 		
@@ -356,8 +357,8 @@ CreatePrefixMenu()
 	} else
 	{
 		SetMenuExitButton(g_hMenuPref, true);
-		SetMenuTitle(g_hMenuPref, "Для установки префикса\nвведите в консоль:\n \nsm_myprefix \"ваш префикс\"\n \nЛибо в чат:\n \n!myprefix \"ваш префикс\"\n \n");
-		AddMenuItem(g_hMenuPref, "", "Назад");
+		SetMenuTitle(g_hMenuPref, "To set the Tag, type in console:\nsm_myprefix \"your Tag\"\n or write in chat:\n!myprefix \"your Tag\"\n");
+		AddMenuItem(g_hMenuPref, "", "Back");
 	}
 }
 
@@ -366,7 +367,7 @@ public Action:MyColor_CMD(iClient, args)
 	if(iClient > 0) 
 	{
 		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR]) SendChatMenu(iClient);
-		else PrintToChat(iClient, "\x04[Shop] \x01Купите бонусы в Shop, чтобы открыть это меню!");
+		else CPrintToChat(iClient, "{green}[Shop] {default}Buy bonuses in the Shop to open this menu!");
 	}
 	return Plugin_Handled;
 }
@@ -374,12 +375,12 @@ public Action:MyColor_CMD(iClient, args)
 SendChatMenu(iClient)
 {
 	new Handle:hChatMenu = CreateMenu(MenuHandler_ChatMenu);
-	SetMenuTitle(hChatMenu, "Управление чатом\n \n");
+	SetMenuTitle(hChatMenu, "Chat management\n \n");
 	SetMenuExitButton(hChatMenu, true);
-	AddMenuItem(hChatMenu, "", "Цвет ника", (g_bUsed[iClient][NAME_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	AddMenuItem(hChatMenu, "", "Цвет текста", (g_bUsed[iClient][TEXT_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	AddMenuItem(hChatMenu, "", "Цвет префикса", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	AddMenuItem(hChatMenu, "", "Префикс", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	AddMenuItem(hChatMenu, "", "Name color", (g_bUsed[iClient][NAME_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	AddMenuItem(hChatMenu, "", "Text color", (g_bUsed[iClient][TEXT_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	AddMenuItem(hChatMenu, "", "Tag color", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	AddMenuItem(hChatMenu, "", "Tag", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	DisplayMenu(hChatMenu, iClient, MENU_TIME_FOREVER);
 }
 
@@ -416,7 +417,7 @@ public MenuHandler_Pref(Handle:hMenu, MenuAction:action, iClient, option)
 		{
 			GetMenuItem(hMenu, option, g_sPrefix[iClient], sizeof(g_sPrefix[]));
 			SetClientCookie(iClient, g_hCookie[PREFIX], g_sPrefix[iClient]);
-			PrintToChat(iClient, "\x04[Shop] \x01Вы установили себе префикс: \x04%s", g_sPrefix[iClient]);
+			CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
 			SendChatMenu(iClient);
 		}
 	} else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) SendChatMenu(iClient);
@@ -433,9 +434,9 @@ public Action:MyPref_CMD(iClient, args)
 				GetCmdArgString(g_sPrefix[iClient], sizeof(g_sPrefix[]));
 				if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Префикс");
 				SetClientCookie(iClient, g_hCookie[PREFIX], g_sPrefix[iClient]);
-				PrintToChat(iClient, "\x04[Shop] \x01Вы установили себе префикс: \x04%s", g_sPrefix[iClient]);
-			} else PrintToChat(iClient, "\x04[Shop] \x01Даная команда недоступна!");
-		} else PrintToChat(iClient, "\x04[Shop] \x01Для доступа к этой команде купите префикс в \x04Shop\x01!");
+				CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
+			} else CPrintToChat(iClient, "{green}[Shop] {default}This command is not available!");
+		} else CPrintToChat(iClient, "{green}[Shop] {default}To access this command, buy a Tag in the Shop!");
 	}
 }
 
@@ -464,7 +465,7 @@ public Action:OnClientSayCommand(iClient, const String:command[], const String:s
 
 			if(StrEqual(command, "say"))
 			{
-				FormatEx(sText, sizeof(sText), "\x01%s%s%s%s", (iTeam < 2) ? "*НАБЛЮДАТЕЛЬ* ":((IsPlayerAlive(iClient)) ? "":"*УБИТ* "), sPrefix, sNameColor, sTextColor);
+				FormatEx(sText, sizeof(sText), "\x01%s%s%s%s", (iTeam < 2) ? "*SPECTATOR* ":((IsPlayerAlive(iClient)) ? "":"*DEAD* "), sPrefix, sNameColor, sTextColor);
 				new Handle:h = StartMessageAll("SayText2");
 				if (h != INVALID_HANDLE) 
 				{ 
@@ -475,7 +476,7 @@ public Action:OnClientSayCommand(iClient, const String:command[], const String:s
 				}
 			} else if(StrEqual(command, "say_team"))
 			{
-				FormatEx(sText, sizeof(sText), "\x01%s %s%s%s%s", (iTeam < 2) ? "(Наблюдатель)":((iTeam == 2) ? "(Террорист)":"(Спецназовец)"), (iTeam < 2) ? "":((IsPlayerAlive(iClient)) ? "":"*УБИТ* "), sPrefix, sNameColor, sTextColor);
+				FormatEx(sText, sizeof(sText), "\x01%s %s%s%s%s", (iTeam < 2) ? "(Spectator)":((iTeam == 2) ? "(Terrorist)":"(Counter-Terrorist)"), (iTeam < 2) ? "":((IsPlayerAlive(iClient)) ? "":"*DEAD* "), sPrefix, sNameColor, sTextColor);
 				for (new i = 1; i <= MaxClients; i++)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == iTeam) 
