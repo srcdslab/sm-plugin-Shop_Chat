@@ -41,11 +41,13 @@
 
 #pragma semicolon 1
 #pragma newdecls required
+
 #include <sourcemod>
-#include <shop>
 #include <sdktools_functions>
 #include <basecomm>
 #include <clientprefs>
+
+#include <shop>
 #include <multicolors>
 
 #define CATEGORY "Chat"
@@ -92,6 +94,14 @@ int
 
 ItemId id[3];
 
+bool g_bLate = false;
+
+public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
+{
+	g_bLate = late;
+	return APLRes_Success;
+}
+
 public void OnPluginStart()
 {
 	ConVar hCvar;
@@ -136,8 +146,10 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_color", MyColor_CMD);
 	RegConsoleCmd("sm_myprefix", MyPref_CMD);
 
-	if (Shop_IsStarted()) 
+	if (g_bLate && Shop_IsStarted())
+	{
 		Shop_Started();
+	}
 }
 
 public void NamePriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
@@ -217,7 +229,7 @@ public void OnPluginEnd()
 	Shop_UnregisterMe();
 }
 
-stock void Shop_Started()
+public void Shop_Started()
 {
 	CategoryId category_id = Shop_RegisterCategory(CATEGORY, "Chat", "");
 
