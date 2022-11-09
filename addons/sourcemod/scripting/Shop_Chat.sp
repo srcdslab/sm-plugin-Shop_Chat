@@ -35,9 +35,12 @@
 				Minor fixes.
 				Changed the info menu.
 		2.2.3 - Fixed bug where client could be out of game 442 line
+		2.2.4 - Multicolors support
+		2.2.5 - Update to SM 1.11
 */
 
 #pragma semicolon 1
+#pragma newdecls required
 #include <sourcemod>
 #include <shop>
 #include <sdktools_functions>
@@ -52,39 +55,46 @@
 #define COLORTAG "\x07"
 #define DEFAULT_COLOR "FFFFFF"
 
-public Plugin:myinfo = 
+public Plugin myinfo = 
 {
 	name = "[Shop] Name/Prefix/Text Color",
 	description = "Grant player to buy name/prefix/text color",
 	author = "R1KO, maxime1907",
-	version = "2.2.4",
+	version = "2.2.5",
 	url = "http://hlmod.ru"
-};
+}
 
 #define NAME_COLOR 0
 #define TEXT_COLOR 1
 #define PREFIX_COLOR 2
 #define PREFIX 3
 
-new	Handle:g_hMenuColor,
-	Handle:g_hMenuPref,
-	Handle:g_hCookie[4];
+Handle	
+	g_hMenuColor,
+	g_hMenuPref,
+	g_hCookie[4];
 
-new	g_iArrayPrice[3],
+int	
+	g_iArrayPrice[3],
 	g_iArraySellPrice[3],
-	g_iArrayDuration[3],
-	bool:g_bUsePrefixFile;
+	g_iArrayDuration[3];
+	
+bool
+	g_bUsePrefixFile,
+	g_bUsed[MAXPLAYERS + 1][3];
+	
+char 
+	g_sColors[MAXPLAYERS+1][3][15],
+	g_sPrefix[MAXPLAYERS + 1][100];
 
-new bool:g_bUsed[MAXPLAYERS+1][3],
-	String:g_sColors[MAXPLAYERS+1][3][15],
-	String:g_sPrefix[MAXPLAYERS+1][100],
+int	
 	g_iTypeMenu[MAXPLAYERS+1];
 
-new ItemId:id[3];
+ItemId id[3];
 
-public OnPluginStart()
+public void OnPluginStart()
 {
-	new Handle:hCvar;
+	ConVar hCvar;
 	
 	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_name_price", "1000", "Name color price")), NamePriceChange);
 	g_iArrayPrice[NAME_COLOR] = GetConVarInt(hCvar);
@@ -115,8 +125,6 @@ public OnPluginStart()
 	
 	HookConVarChange((hCvar = CreateConVar("sm_shop_chat_use_prefix_file", "0", "Allow only Tags from the config file to be selected, otherwise - can specify any (1 - On, 0 - Off)")), UsePrefixFileChange);
 	g_bUsePrefixFile = GetConVarBool(hCvar);
-	
-	CloseHandle(hCvar);
 
 	AutoExecConfig(true, _, "shop");
 
@@ -128,76 +136,90 @@ public OnPluginStart()
 	RegConsoleCmd("sm_color", MyColor_CMD);
 	RegConsoleCmd("sm_myprefix", MyPref_CMD);
 
-	if (Shop_IsStarted()) Shop_Started();
+	if (Shop_IsStarted()) 
+		Shop_Started();
 }
 
-public NamePriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void NamePriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayPrice[NAME_COLOR] = GetConVarInt(hCvar);
-	if(id[NAME_COLOR] != INVALID_ITEM) Shop_SetItemPrice(id[NAME_COLOR], g_iArrayPrice[NAME_COLOR]);
+	if(id[NAME_COLOR] != INVALID_ITEM) 
+		Shop_SetItemPrice(id[NAME_COLOR], g_iArrayPrice[NAME_COLOR]);
 }
 
-public NameSellPriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void NameSellPriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArraySellPrice[NAME_COLOR] = GetConVarInt(hCvar);
 	if(id[NAME_COLOR] != INVALID_ITEM) Shop_SetItemSellPrice(id[NAME_COLOR], g_iArraySellPrice[NAME_COLOR]);
 }
 
-public NameDurationChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void NameDurationChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayDuration[NAME_COLOR] = GetConVarInt(hCvar);
 	if(id[NAME_COLOR] != INVALID_ITEM) Shop_SetItemValue(id[NAME_COLOR], g_iArrayDuration[NAME_COLOR]);
 }
 
-public TextPriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void TextPriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayPrice[TEXT_COLOR] = GetConVarInt(hCvar);
-	if(id[TEXT_COLOR] != INVALID_ITEM) Shop_SetItemPrice(id[TEXT_COLOR], g_iArrayPrice[TEXT_COLOR]);
+	if(id[TEXT_COLOR] != INVALID_ITEM) 
+		Shop_SetItemPrice(id[TEXT_COLOR], g_iArrayPrice[TEXT_COLOR]);
 }
 
-public TextSellPriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void TextSellPriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArraySellPrice[TEXT_COLOR] = GetConVarInt(hCvar);
-	if(id[TEXT_COLOR] != INVALID_ITEM) Shop_SetItemSellPrice(id[TEXT_COLOR], g_iArraySellPrice[TEXT_COLOR]);
+	if(id[TEXT_COLOR] != INVALID_ITEM) 
+		Shop_SetItemSellPrice(id[TEXT_COLOR], g_iArraySellPrice[TEXT_COLOR]);
 }
 
-public TextDurationChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void TextDurationChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayDuration[TEXT_COLOR] = GetConVarInt(hCvar);
-	if(id[TEXT_COLOR] != INVALID_ITEM) Shop_SetItemValue(id[TEXT_COLOR], g_iArrayDuration[TEXT_COLOR]);
+	if(id[TEXT_COLOR] != INVALID_ITEM) 
+		Shop_SetItemValue(id[TEXT_COLOR], g_iArrayDuration[TEXT_COLOR]);
 }
 
-public PrefixPriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void PrefixPriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayPrice[PREFIX_COLOR] = GetConVarInt(hCvar);
-	if(id[PREFIX_COLOR] != INVALID_ITEM) Shop_SetItemPrice(id[PREFIX_COLOR], g_iArrayPrice[PREFIX_COLOR]);
+	if(id[PREFIX_COLOR] != INVALID_ITEM) 
+		Shop_SetItemPrice(id[PREFIX_COLOR], g_iArrayPrice[PREFIX_COLOR]);
 }
 
-public PrefixSellPriceChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void PrefixSellPriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArraySellPrice[PREFIX_COLOR] = GetConVarInt(hCvar);
-	if(id[PREFIX_COLOR] != INVALID_ITEM) Shop_SetItemSellPrice(id[PREFIX_COLOR], g_iArraySellPrice[PREFIX_COLOR]);
+	if(id[PREFIX_COLOR] != INVALID_ITEM) 
+		Shop_SetItemSellPrice(id[PREFIX_COLOR], g_iArraySellPrice[PREFIX_COLOR]);
 }
 
-public PrefixDurationChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void PrefixDurationChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayDuration[PREFIX_COLOR] = GetConVarInt(hCvar);
-	if(id[PREFIX_COLOR] != INVALID_ITEM) Shop_SetItemValue(id[PREFIX_COLOR], g_iArrayDuration[PREFIX_COLOR]);
+	if(id[PREFIX_COLOR] != INVALID_ITEM) 
+		Shop_SetItemValue(id[PREFIX_COLOR], g_iArrayDuration[PREFIX_COLOR]);
 }
 
-public UsePrefixFileChange(Handle:hCvar, const String:oldValue[], const String:newValue[])
+public void UsePrefixFileChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_bUsePrefixFile = GetConVarBool(hCvar);
 	CreatePrefixMenu();
 }
 
-public OnConfigsExecuted() ParseCFG();
-
-public OnPluginEnd() Shop_UnregisterMe();
-
-public Shop_Started()
+public void OnConfigsExecuted()
 {
-	new CategoryId:category_id = Shop_RegisterCategory(CATEGORY, "Chat", "");
+	ParseCFG();
+}
+
+public void OnPluginEnd()
+{
+	Shop_UnregisterMe();
+}
+
+stock void Shop_Started()
+{
+	CategoryId category_id = Shop_RegisterCategory(CATEGORY, "Chat", "");
 
 	if (Shop_StartItem(category_id, ITEM1))
 	{
@@ -219,22 +241,34 @@ public Shop_Started()
 	}
 }
 
-public OnNameItemRegistered(CategoryId:category_id, const String:category[], const String:item[], ItemId:item_id) id[NAME_COLOR] = item_id;
-public OnTextItemRegistered(CategoryId:category_id, const String:category[], const String:item[], ItemId:item_id) id[TEXT_COLOR] = item_id;
-public OnPrefixItemRegistered(CategoryId:category_id, const String:category[], const String:item[], ItemId:item_id) id[PREFIX_COLOR] = item_id;
-
-public Shop_OnAuthorized(iClient)
+public void OnNameItemRegistered(CategoryId category_id, const char[] category, const char[] item, ItemId item_id)
 {
-	for(new i=0; i<3; i++)
+	id[NAME_COLOR] = item_id;
+}
+
+public void OnTextItemRegistered(CategoryId category_id, const char[] category, const char[] item, ItemId item_id)
+{
+	id[TEXT_COLOR] = item_id;
+}
+
+public void OnPrefixItemRegistered(CategoryId category_id, const char[] category, const char[] item, ItemId item_id)
+{
+	id[PREFIX_COLOR] = item_id;
+}
+
+public void Shop_OnAuthorized(int iClient)
+{
+	for(int i = 0; i < 3; i++)
 	{
 		g_sColors[iClient][i][0] = '\0';
 		g_bUsed[iClient][i] = false;
-		if(Shop_IsClientHasItem(iClient, id[i])) g_bUsed[iClient][i] = Shop_IsClientItemToggled(iClient, id[i]);
+		if(Shop_IsClientHasItem(iClient, id[i])) 
+			g_bUsed[iClient][i] = Shop_IsClientItemToggled(iClient, id[i]);
 	}
 	g_sPrefix[iClient][0] = '\0';
 }
 
-public ShopAction:OnNameColorUsed(iClient, CategoryId:category_id, const String:category[], ItemId:item_id, const String:item[], bool:isOn, bool:elapsed)
+public ShopAction OnNameColorUsed(int iClient, CategoryId category_id, const char[] category, ItemId item_id, const char[] item, bool isOn, bool elapsed)
 {
 	if (isOn || elapsed)
 	{
@@ -250,7 +284,7 @@ public ShopAction:OnNameColorUsed(iClient, CategoryId:category_id, const String:
 	return Shop_UseOn;
 }
 
-public ShopAction:OnTextColorUsed(iClient, CategoryId:category_id, const String:category[], ItemId:item_id, const String:item[], bool:isOn, bool:elapsed)
+public ShopAction OnTextColorUsed(int iClient, CategoryId category_id, const char[] category, ItemId item_id, const char[] item, bool isOn, bool elapsed)
 {
 	if (isOn || elapsed)
 	{
@@ -266,7 +300,7 @@ public ShopAction:OnTextColorUsed(iClient, CategoryId:category_id, const String:
 	return Shop_UseOn;
 }
 
-public ShopAction:OnPrefixUsed(iClient, CategoryId:category_id, const String:category[], ItemId:item_id, const String:item[], bool:isOn, bool:elapsed)
+public ShopAction OnPrefixUsed(int iClient, CategoryId category_id, const char[] category, ItemId item_id, const char[] item, bool isOn, bool elapsed)
 {
 	if (isOn || elapsed)
 	{
@@ -286,46 +320,60 @@ public ShopAction:OnPrefixUsed(iClient, CategoryId:category_id, const String:cat
 	return Shop_UseOn;
 }
 
-stock String:EditColor(String:sColor[], len) Format(sColor, len, "%s%s", COLORTAG, (StringToInt(sColor, 16) != 0 || StrEqual(sColor, "000000")) ? sColor:DEFAULT_COLOR);
+stock void EditColor(char[] sColor, int len)
+{
+	Format(sColor, len, "%s%s", COLORTAG, (StringToInt(sColor, 16) != 0 || StrEqual(sColor, "000000")) ? sColor:DEFAULT_COLOR);
+}
 
-ParseCFG()
+stock void ParseCFG()
 {
 	CheckCloseHandle(g_hMenuColor);
 	
-	decl String:sBuffer[PLATFORM_MAX_PATH];
+	char sBuffer[PLATFORM_MAX_PATH];
 	BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "configs/shop/chat_colors.cfg");	
 	
-	if(!FileExists(sBuffer)) SetFailState("File not found: %s", sBuffer);
+	if(!FileExists(sBuffer)) 
+		SetFailState("File not found: %s", sBuffer);
+		
 	g_hMenuColor = CreateMenu(MenuHandler_Color);
 	SetMenuExitBackButton(g_hMenuColor, true);
 	SetMenuTitle(g_hMenuColor, "Choose a color:");
 
-	new Handle:ConfigParser = SMC_CreateParser();
+	Handle ConfigParser = SMC_CreateParser();
 	SMC_SetReaders(ConfigParser, ReadConfig_NewSection, ReadConfig_KeyValue, ReadConfig_EndSection);
 
-	new SMCError:err = SMC_ParseFile(ConfigParser, sBuffer);
+	SMCError err = SMC_ParseFile(ConfigParser, sBuffer);
 
 	if (err != SMCError_Okay)
 	{
-		decl String:buffer[64];
-		if (SMC_GetErrorString(err, buffer, sizeof(buffer))) PrintToServer(buffer);
-		else PrintToServer("Fatal parse error");
+		char buffer[64];
+		if (SMC_GetErrorString(err, buffer, sizeof(buffer)))
+			PrintToServer(buffer);
+		else 
+			PrintToServer("Fatal parse error");
 	}
+	
 	CloseHandle(ConfigParser);
 	CreatePrefixMenu();
 }
 
-public SMCResult:ReadConfig_NewSection(Handle:smc, const String:name[], bool:opt_quotes) return SMCParse_Continue;
+public SMCResult ReadConfig_NewSection(Handle smc, const char[] name, bool opt_quotes)
+{
+	return SMCParse_Continue;
+}
 
-public SMCResult:ReadConfig_KeyValue(Handle:smc, const String:key[], const String:value[], bool:key_quotes, bool:value_quotes)
+public SMCResult ReadConfig_KeyValue(Handle smc, const char[] key, const char[] value, bool key_quotes, bool value_quotes)
 {
 	AddMenuItem(g_hMenuColor, value, key);
 	return SMCParse_Continue;
 }
 
-public SMCResult:ReadConfig_EndSection(Handle:smc) return SMCParse_Continue;
+public SMCResult ReadConfig_EndSection(Handle smc)
+{
+	return SMCParse_Continue;
+}
 
-CreatePrefixMenu()
+stock void CreatePrefixMenu()
 {
 	CheckCloseHandle(g_hMenuPref);
 
@@ -336,10 +384,10 @@ CreatePrefixMenu()
 		SetMenuExitBackButton(g_hMenuPref, true);
 		SetMenuTitle(g_hMenuPref, "Choose a Tag:");
 		
-		decl String:sBuffer[PLATFORM_MAX_PATH];
+		char sBuffer[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "configs/shop/chat_prefix.cfg");
 		if(!FileExists(sBuffer)) SetFailState("File not found: %s", sBuffer);
-		new Handle:hFile = OpenFile(sBuffer, "r");
+		Handle hFile = OpenFile(sBuffer, "r");
 		
 		if (hFile != INVALID_HANDLE)
 		{
@@ -362,19 +410,22 @@ CreatePrefixMenu()
 	}
 }
 
-public Action:MyColor_CMD(iClient, args)
+public Action MyColor_CMD(int iClient, int args)
 {
 	if(iClient > 0) 
 	{
-		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR]) SendChatMenu(iClient);
-		else CPrintToChat(iClient, "{green}[Shop] {default}Buy bonuses in the Shop to open this menu!");
+		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR])
+			SendChatMenu(iClient);
+		else 
+			CPrintToChat(iClient, "{green}[Shop] {default}Buy bonuses in the Shop to open this menu!");
 	}
+	
 	return Plugin_Handled;
 }
 
-SendChatMenu(iClient)
+stock void SendChatMenu(int iClient)
 {
-	new Handle:hChatMenu = CreateMenu(MenuHandler_ChatMenu);
+	Handle hChatMenu = CreateMenu(MenuHandler_ChatMenu);
 	SetMenuTitle(hChatMenu, "Chat management\n \n");
 	SetMenuExitButton(hChatMenu, true);
 	AddMenuItem(hChatMenu, "", "Name color", (g_bUsed[iClient][NAME_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
@@ -384,20 +435,25 @@ SendChatMenu(iClient)
 	DisplayMenu(hChatMenu, iClient, MENU_TIME_FOREVER);
 }
 
-public MenuHandler_ChatMenu(Handle:hMenu, MenuAction:action, iClient, option) 
+public int MenuHandler_ChatMenu(Handle hMenu, MenuAction action, int iClient, int option) 
 {
  	if (action == MenuAction_Select)
 	{
-		if(option == 3) DisplayMenu(g_hMenuPref, iClient, MENU_TIME_FOREVER);
+		if(option == 3) 
+			DisplayMenu(g_hMenuPref, iClient, MENU_TIME_FOREVER);
 		else
 		{
 			g_iTypeMenu[iClient] = option;
 			DisplayMenu(g_hMenuColor, iClient, MENU_TIME_FOREVER);
 		}
-	} else if (action == MenuAction_End) CloseHandle(hMenu);
+	} 
+	else if (action == MenuAction_End) 
+		CloseHandle(hMenu);
+		
+	return 0;
 }
 
-public MenuHandler_Color(Handle:hMenu, MenuAction:action, iClient, option) 
+public int MenuHandler_Color(Handle hMenu, MenuAction action, int iClient, int option) 
 {
  	if (action == MenuAction_Select)
 	{
@@ -405,14 +461,19 @@ public MenuHandler_Color(Handle:hMenu, MenuAction:action, iClient, option)
 		SetClientCookie(iClient, g_hCookie[g_iTypeMenu[iClient]], g_sColors[iClient][g_iTypeMenu[iClient]]);
 		EditColor(g_sColors[iClient][g_iTypeMenu[iClient]], sizeof(g_sColors[][]));
 		SendChatMenu(iClient);
-	} else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) SendChatMenu(iClient);
+	} 
+	else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) 
+		SendChatMenu(iClient);
+		
+	return 0;
 }
 
-public MenuHandler_Pref(Handle:hMenu, MenuAction:action, iClient, option) 
+public int MenuHandler_Pref(Handle hMenu, MenuAction action, int iClient, int option) 
 {
 	if (action == MenuAction_Select)
 	{
-		if(!g_bUsePrefixFile) SendChatMenu(iClient);
+		if(!g_bUsePrefixFile) 
+			SendChatMenu(iClient);
 		else
 		{
 			GetMenuItem(hMenu, option, g_sPrefix[iClient], sizeof(g_sPrefix[]));
@@ -420,10 +481,14 @@ public MenuHandler_Pref(Handle:hMenu, MenuAction:action, iClient, option)
 			CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
 			SendChatMenu(iClient);
 		}
-	} else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) SendChatMenu(iClient);
+	}
+	else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) 
+		SendChatMenu(iClient);
+	
+	return 0;
 }
 
-public Action:MyPref_CMD(iClient, args)
+public Action MyPref_CMD(int iClient, int args)
 {
 	if(iClient > 0)
 	{
@@ -432,30 +497,40 @@ public Action:MyPref_CMD(iClient, args)
 			if(!g_bUsePrefixFile)
 			{
 				GetCmdArgString(g_sPrefix[iClient], sizeof(g_sPrefix[]));
-				if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Префикс");
+				if(g_sPrefix[iClient][0] == '\0') 
+					strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Префикс");
+					
 				SetClientCookie(iClient, g_hCookie[PREFIX], g_sPrefix[iClient]);
 				CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
-			} else CPrintToChat(iClient, "{green}[Shop] {default}This command is not available!");
-		} else CPrintToChat(iClient, "{green}[Shop] {default}To access this command, buy a Tag in the Shop!");
+			} 
+			else 
+				CPrintToChat(iClient, "{green}[Shop] {default}This command is not available!");
+		} 
+		else 
+			CPrintToChat(iClient, "{green}[Shop] {default}To access this command, buy a Tag in the Shop!");
 	}
+	
+	return Plugin_Handled;
 }
 
-public Action:OnClientSayCommand(iClient, const String:command[], const String:sArgs[])
+public Action OnClientSayCommand(int iClient, const char[] command, const char[] sArgs)
 {
-	if(iClient > 0 && !IsFakeClient(iClient) && IsClientInGame(iClient))
+	if(iClient > 0 && IsClientInGame(iClient) && !IsFakeClient(iClient))
 	{
-		if(BaseComm_IsClientGagged(iClient)) return Plugin_Handled;
+		if(BaseComm_IsClientGagged(iClient)) 
+			return Plugin_Handled;
+			
 		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR])
 		{
 			if(sArgs[1] == '@' || sArgs[1] == '/') return Plugin_Continue;
 
-			decl String:sText[192];
+			char sText[192];
 			strcopy(sText, sizeof(sText), sArgs);
 			TrimString(sText);
 			StripQuotes(sText);
 			
-			new iTeam = GetClientTeam(iClient);
-			decl String:sNameColor[80], String:sTextColor[210], String:sPrefix[120];
+			int iTeam = GetClientTeam(iClient);
+			char sNameColor[80], sTextColor[210], sPrefix[120];
 				
 			FormatEx(sNameColor, sizeof(sNameColor), "%s%N", (g_bUsed[iClient][NAME_COLOR]) ? g_sColors[iClient][NAME_COLOR]:"\x03", iClient);
 			FormatEx(sTextColor, sizeof(sTextColor), "\x01: %s%s", (g_bUsed[iClient][TEXT_COLOR]) ? g_sColors[iClient][TEXT_COLOR]:"", sText);
@@ -466,7 +541,7 @@ public Action:OnClientSayCommand(iClient, const String:command[], const String:s
 			if(StrEqual(command, "say"))
 			{
 				FormatEx(sText, sizeof(sText), "\x01%s%s%s%s", (iTeam < 2) ? "*SPECTATOR* ":((IsPlayerAlive(iClient)) ? "":"*DEAD* "), sPrefix, sNameColor, sTextColor);
-				new Handle:h = StartMessageAll("SayText2");
+				Handle h = StartMessageAll("SayText2");
 				if (h != INVALID_HANDLE) 
 				{ 
 					BfWriteByte(h, iClient); 
@@ -474,14 +549,15 @@ public Action:OnClientSayCommand(iClient, const String:command[], const String:s
 					BfWriteString(h, sText); 
 					EndMessage();
 				}
-			} else if(StrEqual(command, "say_team"))
+			} 
+			else if(StrEqual(command, "say_team"))
 			{
 				FormatEx(sText, sizeof(sText), "\x01%s %s%s%s%s", (iTeam < 2) ? "(Spectator)":((iTeam == 2) ? "(Terrorist)":"(Counter-Terrorist)"), (iTeam < 2) ? "":((IsPlayerAlive(iClient)) ? "":"*DEAD* "), sPrefix, sNameColor, sTextColor);
-				for (new i = 1; i <= MaxClients; i++)
+				for (int i = 1; i <= MaxClients; i++)
 				{
 					if (IsClientInGame(i) && !IsFakeClient(i) && GetClientTeam(i) == iTeam) 
 					{
-						new Handle:h = StartMessageOne("SayText2", i);
+						Handle h = StartMessageOne("SayText2", i);
 						if (h != INVALID_HANDLE) 
 						{ 
 							BfWriteByte(h, iClient); 
@@ -498,7 +574,7 @@ public Action:OnClientSayCommand(iClient, const String:command[], const String:s
 	return Plugin_Continue;
 }
 
-stock CheckCloseHandle(&Handle:handle)
+stock void CheckCloseHandle(Handle &handle)
 {
 	if (handle != INVALID_HANDLE)
 	{
