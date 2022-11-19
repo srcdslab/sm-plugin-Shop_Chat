@@ -469,16 +469,6 @@ public Action MyColor_CMD(int iClient, int args)
 			}
 			#endif
 		}
-		if(g_bVIP)
-		{
-			#if defined _vip_core_included
-			if(VIP_IsClientVIP(iClient))
-			{
-				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
-				return Plugin_Handled;
-			}
-			#endif
-		}
 
 		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR])
 			SendChatMenu(iClient);
