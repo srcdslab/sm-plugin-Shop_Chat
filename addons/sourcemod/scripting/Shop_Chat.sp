@@ -37,6 +37,8 @@
 		2.2.3 - Fixed bug where client could be out of game 442 line
 		2.2.4 - Multicolors support
 		2.2.5 - Update to SM 1.11
+		2.2.6 - RegPluginLibrary
+			CCC support
 */
 
 #pragma semicolon 1
@@ -50,6 +52,8 @@
 #include <shop>
 #include <multicolors>
 
+#tryinclude <ccc>
+
 #define CATEGORY "Chat"
 #define ITEM1 "Name Color"
 #define ITEM2 "Prefix"
@@ -62,7 +66,7 @@ public Plugin myinfo =
 	name = "[Shop] Name/Prefix/Text Color",
 	description = "Grant player to buy name/prefix/text color",
 	author = "R1KO, maxime1907",
-	version = "2.2.5",
+	version = "2.2.6",
 	url = "http://hlmod.ru"
 }
 
@@ -95,9 +99,11 @@ int
 ItemId id[3];
 
 bool g_bLate = false;
+bool g_bCCC = false;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
+	RegPluginLibrary("Shop_Chat");
 	g_bLate = late;
 	return APLRes_Success;
 }
@@ -149,6 +155,22 @@ public void OnPluginStart()
 	if (g_bLate && Shop_IsStarted())
 	{
 		Shop_Started();
+	}
+}
+
+public void OnLibraryAdded(const char[] name)
+{
+	if(StrEqual(name, "ccc"))
+	{
+		g_bCCC = true;
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if(StrEqual(name, "ccc"))
+	{
+		g_bCCC = false;
 	}
 }
 
@@ -426,6 +448,17 @@ public Action MyColor_CMD(int iClient, int args)
 {
 	if(iClient > 0) 
 	{
+		if(g_bCCC)
+		{
+			#if defined _ccc_included
+			if(CCC_IsClientEnabled(iClient))
+			{
+				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
+				return Plugin_Handled;
+			}
+			#endif
+		}
+
 		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR])
 			SendChatMenu(iClient);
 		else 
@@ -504,6 +537,17 @@ public Action MyPref_CMD(int iClient, int args)
 {
 	if(iClient > 0)
 	{
+		if(g_bCCC)
+		{
+			#if defined _ccc_included
+			if(CCC_IsClientEnabled(iClient))
+			{
+				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
+				return Plugin_Handled;
+			}
+			#endif
+		}
+
 		if(g_bUsed[iClient][PREFIX_COLOR])
 		{
 			if(!g_bUsePrefixFile)
@@ -529,6 +573,11 @@ public Action OnClientSayCommand(int iClient, const char[] command, const char[]
 {
 	if(iClient > 0 && IsClientInGame(iClient) && !IsFakeClient(iClient))
 	{
+		#if defined _ccc_included
+		if(g_bCCC && CCC_IsClientEnabled(iClient))
+			return Plugin_Continue;
+		#endif
+
 		if(BaseComm_IsClientGagged(iClient)) 
 			return Plugin_Handled;
 			
