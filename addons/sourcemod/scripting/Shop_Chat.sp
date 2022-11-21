@@ -158,6 +158,22 @@ public void OnPluginStart()
 	}
 }
 
+public void OnLibraryAdded(const char[] name)
+{
+	if(StrEqual(name, "ccc"))
+	{
+		g_bCCC = true;
+	}
+}
+
+public void OnLibraryRemoved(const char[] name)
+{
+	if(StrEqual(name, "ccc"))
+	{
+		g_bCCC = false;
+	}
+}
+
 public void NamePriceChange(ConVar hCvar, const char[] oldValue, const char[] newValue)
 {
 	g_iArrayPrice[NAME_COLOR] = GetConVarInt(hCvar);
