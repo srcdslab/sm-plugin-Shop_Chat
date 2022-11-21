@@ -38,7 +38,6 @@
 		2.2.4 - Multicolors support
 		2.2.5 - Update to SM 1.11
 		2.2.6 - RegPluginLibrary
-			VIP Core support
 			CCC support
 */
 
@@ -53,7 +52,6 @@
 #include <shop>
 #include <multicolors>
 
-#tryinclude <vip_core>
 #tryinclude <ccc>
 
 #define CATEGORY "Chat"
@@ -102,7 +100,6 @@ ItemId id[3];
 
 bool g_bLate = false;
 bool g_bCCC = false;
-bool g_bVIP = false;
 
 public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max)
 {
@@ -158,30 +155,6 @@ public void OnPluginStart()
 	if (g_bLate && Shop_IsStarted())
 	{
 		Shop_Started();
-	}
-}
-
-public void OnLibraryAdded(const char[] name)
-{
-	if(StrEqual(name, "ccc"))
-	{
-		g_bCCC = true;
-	}
-	if(StrEqual(name, "vip_core"))
-	{
-		g_bVIP = true;
-	}
-}
-
-public void OnLibraryRemoved(const char[] name)
-{
-	if(StrEqual(name, "ccc"))
-	{
-		g_bCCC = false;
-	}
-	if(StrEqual(name, "vip_core"))
-	{
-		g_bVIP = false;
 	}
 }
 
@@ -558,16 +531,6 @@ public Action MyPref_CMD(int iClient, int args)
 			}
 			#endif
 		}
-		if(g_bVIP)
-		{
-			#if defined _vip_core_included
-			if(VIP_IsClientVIP(iClient))
-			{
-				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
-				return Plugin_Handled;
-			}
-			#endif
-		}
 
 		if(g_bUsed[iClient][PREFIX_COLOR])
 		{
@@ -596,10 +559,6 @@ public Action OnClientSayCommand(int iClient, const char[] command, const char[]
 	{
 		#if defined _ccc_included
 		if(g_bCCC && CCC_IsClientEnabled(iClient))
-			return Plugin_Continue;
-		#endif
-		#if defined _vip_core_included
-		if(g_bVIP && VIP_IsClientVIP(iClient))
 			return Plugin_Continue;
 		#endif
 
