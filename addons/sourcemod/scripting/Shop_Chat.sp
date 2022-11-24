@@ -149,8 +149,8 @@ public void OnPluginStart()
 	g_hCookie[PREFIX_COLOR] = RegClientCookie("Shop Prefix Color", "Prefix Color", CookieAccess_Public);
 	g_hCookie[PREFIX] = RegClientCookie("Shop Prefix", "Prefix", CookieAccess_Public);
 
-	RegConsoleCmd("sm_color", MyColor_CMD);
-	RegConsoleCmd("sm_myprefix", MyPref_CMD);
+	RegConsoleCmd("sm_shopcolor", MyColor_CMD);
+	RegConsoleCmd("sm_shoptag", MyPref_CMD);
 
 	if (g_bLate && Shop_IsStarted())
 	{
