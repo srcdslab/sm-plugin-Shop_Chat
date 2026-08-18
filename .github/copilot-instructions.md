@@ -25,18 +25,17 @@ This repository contains a SourcePawn plugin for SourceMod that integrates with 
 ## Technical Environment
 
 ### Core Dependencies
-- **SourceMod**: 1.11.0+ (uses 1.11.0-git6917 in build)
-- **SourcePawn Compiler**: Latest compatible with SM version
-- **Build System**: SourceKnight 0.1
+- **SourceMod**: 1.12.x (build target)
+- **SourcePawn Compiler**: 1.12.x (via rumblefrog/setup-sp)
+- **Build System**: Native GitHub Actions (spcomp)
 
-### Plugin Dependencies (Auto-managed by SourceKnight)
+### Plugin Dependencies (Cloned in CI)
 - **Shop-Core**: Primary shop system integration
 - **MultiColors**: Enhanced color support for chat messages
 - **CustomChatColors**: Optional integration for advanced color features
 
 ### Build Tools
-- **SourceKnight**: Handles dependency management, compilation, and packaging
-- **GitHub Actions**: Automated CI/CD pipeline for builds and releases
+- **GitHub Actions**: Clones include dependencies, compiles with spcomp, packages and releases
 
 ## Project Structure
 
@@ -47,7 +46,6 @@ addons/sourcemod/
 ├── configs/
 │   ├── chat_colors.cfg        # Available color definitions  
 │   └── chat_prefix.cfg        # Available prefix options
-sourceknight.yaml              # Build configuration and dependencies
 .github/workflows/ci.yml       # CI/CD pipeline
 ```
 
@@ -75,14 +73,12 @@ sourceknight.yaml              # Build configuration and dependencies
 
 ### Building the Plugin
 
-1. **Using SourceKnight** (Recommended):
-   ```bash
-   # Install SourceKnight if not available
-   # Build the plugin
-   sourceknight build
-   ```
+1. **Using GitHub Actions** (Recommended): Push or open a PR; `.github/workflows/ci.yml` clones the
+   include dependencies (MultiColors, CustomChatColors, Shop-Core), compiles with `spcomp` against
+   SourceMod 1.12.x, and uploads/packages the build artifact.
 
-2. **Dependencies**: Automatically managed by SourceKnight configuration
+2. **Locally**: Fetch the includes for the dependencies above into an `include/` folder and run
+   `spcomp -i include -o Shop_Chat.smx Shop_Chat.sp` from `addons/sourcemod/scripting`.
 
 3. **Output**: Compiled `.smx` files placed in `addons/sourcemod/plugins`
 
@@ -196,7 +192,7 @@ sm_shop_chat_use_prefix_file "0"        // 1 = file-based, 0 = free-form
 ## Testing & Validation
 
 ### Local Testing
-1. **Build**: Run `sourceknight build` to compile
+1. **Build**: Run the GitHub Actions workflow (or `spcomp` locally, see above) to compile
 2. **Deploy**: Copy output to SourceMod test server
 3. **Dependencies**: Ensure Shop-Core and dependencies are loaded
 4. **Configuration**: Verify config files exist and are readable
