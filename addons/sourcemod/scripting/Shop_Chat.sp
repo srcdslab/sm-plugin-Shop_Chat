@@ -66,7 +66,7 @@ public Plugin myinfo =
 	name = "[Shop] Name/Prefix/Text Color",
 	description = "Grant player to buy name/prefix/text color",
 	author = "R1KO, maxime1907",
-	version = "2.2.7",
+	version = "2.2.8",
 	url = "http://hlmod.ru"
 }
 
@@ -112,6 +112,8 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnPluginStart()
 {
+	LoadTranslations("Shop_Chat.phrases");
+
 	ConVar hCvar;
 	
 	((hCvar = CreateConVar("sm_shop_chat_name_price", "1000", "Name color price"))).AddChangeHook(NamePriceChange);
@@ -255,24 +257,24 @@ public void OnPluginEnd()
 
 public void Shop_Started()
 {
-	CategoryId category_id = Shop_RegisterCategory(CATEGORY, "Chat", "");
+	CategoryId category_id = Shop_RegisterCategory(CATEGORY, "Chat", "", OnCategoryDisplay);
 
 	if (Shop_StartItem(category_id, ITEM1))
 	{
 		Shop_SetInfo("Name color", "", g_iArrayPrice[NAME_COLOR], g_iArraySellPrice[NAME_COLOR], Item_Togglable, g_iArrayDuration[NAME_COLOR]);
-		Shop_SetCallbacks(OnNameItemRegistered, OnNameColorUsed);
+		Shop_SetCallbacks(OnNameItemRegistered, OnNameColorUsed, _, OnItemDisplay);
 		Shop_EndItem();
 	}
 	if (Shop_StartItem(category_id, ITEM3))
 	{
 		Shop_SetInfo("Text color", "", g_iArrayPrice[TEXT_COLOR], g_iArraySellPrice[TEXT_COLOR], Item_Togglable, g_iArrayDuration[TEXT_COLOR]);
-		Shop_SetCallbacks(OnTextItemRegistered, OnTextColorUsed);
+		Shop_SetCallbacks(OnTextItemRegistered, OnTextColorUsed, _, OnItemDisplay);
 		Shop_EndItem();
 	}
 	if (Shop_StartItem(category_id, ITEM2))
 	{
 		Shop_SetInfo("Tag and Tag color", "", g_iArrayPrice[PREFIX_COLOR], g_iArraySellPrice[PREFIX_COLOR], Item_Togglable, g_iArrayDuration[PREFIX_COLOR]);
-		Shop_SetCallbacks(OnPrefixItemRegistered, OnPrefixUsed);
+		Shop_SetCallbacks(OnPrefixItemRegistered, OnPrefixUsed, _, OnItemDisplay);
 		Shop_EndItem();
 	}
 }
@@ -290,6 +292,26 @@ public void OnTextItemRegistered(CategoryId category_id, const char[] category, 
 public void OnPrefixItemRegistered(CategoryId category_id, const char[] category, const char[] item, ItemId item_id)
 {
 	id[PREFIX_COLOR] = item_id;
+}
+
+public bool OnCategoryDisplay(int iClient, CategoryId category_id, const char[] category, const char[] name, char[] buffer, int maxlen, ShopMenu menu)
+{
+	FormatEx(buffer, maxlen, "%T", "Shop Chat Category", iClient);
+	return true;
+}
+
+public bool OnItemDisplay(int iClient, CategoryId category_id, const char[] category, ItemId item_id, const char[] item, ShopMenu menu, bool &disabled, const char[] name, char[] buffer, int maxlen)
+{
+	if(item_id == id[NAME_COLOR])
+		FormatEx(buffer, maxlen, "%T", "Shop Chat Name Color", iClient);
+	else if(item_id == id[TEXT_COLOR])
+		FormatEx(buffer, maxlen, "%T", "Shop Chat Text Color", iClient);
+	else if(item_id == id[PREFIX_COLOR])
+		FormatEx(buffer, maxlen, "%T", "Shop Chat Tag And Color", iClient);
+	else
+		return false;
+
+	return true;
 }
 
 public void Shop_OnAuthorized(int iClient)
@@ -315,7 +337,7 @@ public ShopAction OnNameColorUsed(int iClient, CategoryId category_id, const cha
 	g_hCookie[NAME_COLOR].Get(iClient, g_sColors[iClient][NAME_COLOR], sizeof(g_sColors[][]));
 	EditColor(g_sColors[iClient][NAME_COLOR], sizeof(g_sColors[][]));
 	g_bUsed[iClient][NAME_COLOR] = true;
-	CPrintToChat(iClient, "{green}[Shop] {default}To select a color for your name, write in the chatbox {green}!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Name Color Hint");
 
 	return Shop_UseOn;
 }
@@ -331,7 +353,7 @@ public ShopAction OnTextColorUsed(int iClient, CategoryId category_id, const cha
 	g_hCookie[TEXT_COLOR].Get(iClient, g_sColors[iClient][TEXT_COLOR], sizeof(g_sColors[][]));
 	EditColor(g_sColors[iClient][TEXT_COLOR], sizeof(g_sColors[][]));
 	g_bUsed[iClient][TEXT_COLOR] = true;
-	CPrintToChat(iClient, "{green}[Shop] {default}To select a text color, write in the chat {green}!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Text Color Hint");
 
 	return Shop_UseOn;
 }
@@ -351,7 +373,7 @@ public ShopAction OnPrefixUsed(int iClient, CategoryId category_id, const char[]
 	if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Tag");
 
 	g_bUsed[iClient][PREFIX_COLOR] = true;
-	CPrintToChat(iClient, "{green}[Shop] {default}To select a Tag and its color, write in the chat {green}!color");
+	CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Tag Hint");
 
 	return Shop_UseOn;
 }
@@ -371,9 +393,9 @@ stock void ParseCFG()
 	if(!FileExists(sBuffer)) 
 		SetFailState("File not found: %s", sBuffer);
 		
-	g_hMenuColor = new Menu(MenuHandler_Color);
+	g_hMenuColor = new Menu(MenuHandler_Color, MENU_ACTIONS_DEFAULT|MenuAction_Display);
 	g_hMenuColor.ExitBackButton = true;
-	g_hMenuColor.SetTitle("Choose a color:");
+	g_hMenuColor.SetTitle("%T", "Shop Chat Choose Color", LANG_SERVER);
 
 	SMCParser ConfigParser = new SMCParser();
 	ConfigParser.OnEnterSection = ReadConfig_NewSection;
@@ -415,12 +437,12 @@ stock void CreatePrefixMenu()
 {
 	CheckCloseHandle(g_hMenuPref);
 
-	g_hMenuPref = new Menu(MenuHandler_Pref);
+	g_hMenuPref = new Menu(MenuHandler_Pref, MENU_ACTIONS_DEFAULT|MenuAction_Display|MenuAction_DisplayItem);
 
 	if(g_bUsePrefixFile)
 	{
 		g_hMenuPref.ExitBackButton = true;
-		g_hMenuPref.SetTitle("Choose a Tag:");
+		g_hMenuPref.SetTitle("%T", "Shop Chat Choose Tag", LANG_SERVER);
 		
 		char sBuffer[PLATFORM_MAX_PATH];
 		BuildPath(Path_SM, sBuffer, sizeof(sBuffer), "configs/shop/chat_prefix.cfg");
@@ -443,7 +465,7 @@ stock void CreatePrefixMenu()
 	} else
 	{
 		g_hMenuPref.ExitButton = true;
-		g_hMenuPref.SetTitle("To set the Tag, type in console:\nsm_myprefix \"your Tag\"\n or write in chat:\n!myprefix \"your Tag\"\n");
+		g_hMenuPref.SetTitle("%T", "Shop Chat Set Tag Help", LANG_SERVER);
 		g_hMenuPref.AddItem("", "Back");
 	}
 }
@@ -457,7 +479,7 @@ public Action MyColor_CMD(int iClient, int args)
 			#if defined _ccc_included
 			if(CCC_IsClientEnabled(iClient))
 			{
-				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
+				CReplyToCommand(iClient, "{green}[Shop] {default}%t", "Shop Chat Use CCC");
 				return Plugin_Handled;
 			}
 			#endif
@@ -466,7 +488,7 @@ public Action MyColor_CMD(int iClient, int args)
 		if(g_bUsed[iClient][NAME_COLOR] || g_bUsed[iClient][TEXT_COLOR] || g_bUsed[iClient][PREFIX_COLOR])
 			SendChatMenu(iClient);
 		else 
-			CPrintToChat(iClient, "{green}[Shop] {default}Buy bonuses in the Shop to open this menu!");
+			CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Buy To Open Menu");
 	}
 	
 	return Plugin_Handled;
@@ -474,13 +496,18 @@ public Action MyColor_CMD(int iClient, int args)
 
 stock void SendChatMenu(int iClient)
 {
+	char sBuffer[64];
 	Menu hChatMenu = new Menu(MenuHandler_ChatMenu);
-	hChatMenu.SetTitle("Chat management\n \n");
+	hChatMenu.SetTitle("%T\n \n", "Shop Chat Menu Title", iClient);
 	hChatMenu.ExitButton = true;
-	hChatMenu.AddItem("", "Name color", (g_bUsed[iClient][NAME_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	hChatMenu.AddItem("", "Text color", (g_bUsed[iClient][TEXT_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	hChatMenu.AddItem("", "Tag color", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
-	hChatMenu.AddItem("", "Tag", (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	FormatEx(sBuffer, sizeof(sBuffer), "%T", "Shop Chat Name Color", iClient);
+	hChatMenu.AddItem("", sBuffer, (g_bUsed[iClient][NAME_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	FormatEx(sBuffer, sizeof(sBuffer), "%T", "Shop Chat Text Color", iClient);
+	hChatMenu.AddItem("", sBuffer, (g_bUsed[iClient][TEXT_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	FormatEx(sBuffer, sizeof(sBuffer), "%T", "Shop Chat Tag Color", iClient);
+	hChatMenu.AddItem("", sBuffer, (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
+	FormatEx(sBuffer, sizeof(sBuffer), "%T", "Shop Chat Tag", iClient);
+	hChatMenu.AddItem("", sBuffer, (g_bUsed[iClient][PREFIX_COLOR]) ? ITEMDRAW_DEFAULT:ITEMDRAW_DISABLED);
 	hChatMenu.Display(iClient, MENU_TIME_FOREVER);
 }
 
@@ -513,6 +540,12 @@ public int MenuHandler_Color(Menu hMenu, MenuAction action, int iClient, int opt
 	} 
 	else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) 
 		SendChatMenu(iClient);
+	else if (action == MenuAction_Display)
+	{
+		char sTitle[128];
+		FormatEx(sTitle, sizeof(sTitle), "%T", "Shop Chat Choose Color", iClient);
+		view_as<Panel>(option).SetTitle(sTitle);
+	}
 		
 	return 0;
 }
@@ -527,12 +560,29 @@ public int MenuHandler_Pref(Menu hMenu, MenuAction action, int iClient, int opti
 		{
 			hMenu.GetItem(option, g_sPrefix[iClient], sizeof(g_sPrefix[]));
 			g_hCookie[PREFIX].Set(iClient, g_sPrefix[iClient]);
-			CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
+			CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Tag Set", g_sPrefix[iClient]);
 			SendChatMenu(iClient);
 		}
 	}
 	else if (action == MenuAction_Cancel && option == MenuCancel_ExitBack) 
 		SendChatMenu(iClient);
+	else if (action == MenuAction_Display)
+	{
+		char sTitle[512];
+		FormatEx(sTitle, sizeof(sTitle), "%T", g_bUsePrefixFile ? "Shop Chat Choose Tag" : "Shop Chat Set Tag Help", iClient);
+		view_as<Panel>(option).SetTitle(sTitle);
+	}
+	else if (action == MenuAction_DisplayItem)
+	{
+		char sInfo[100];
+		hMenu.GetItem(option, sInfo, sizeof(sInfo));
+		if(sInfo[0] == '\0')
+		{
+			char sDisplay[128];
+			FormatEx(sDisplay, sizeof(sDisplay), "%T", g_bUsePrefixFile ? "Shop Chat No Tags" : "Shop Chat Back", iClient);
+			return RedrawMenuItem(sDisplay);
+		}
+	}
 	
 	return 0;
 }
@@ -546,7 +596,7 @@ public Action MyPref_CMD(int iClient, int args)
 			#if defined _ccc_included
 			if(CCC_IsClientEnabled(iClient))
 			{
-				CReplyToCommand(iClient, "{green}[Shop] {default}Please use CCC commands instead!");
+				CReplyToCommand(iClient, "{green}[Shop] {default}%t", "Shop Chat Use CCC");
 				return Plugin_Handled;
 			}
 			#endif
@@ -561,13 +611,13 @@ public Action MyPref_CMD(int iClient, int args)
 					strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Префикс");
 					
 				g_hCookie[PREFIX].Set(iClient, g_sPrefix[iClient]);
-				CPrintToChat(iClient, "{green}[Shop] {default}You have set yourself a Tag: {green}%s", g_sPrefix[iClient]);
+				CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Tag Set", g_sPrefix[iClient]);
 			} 
 			else 
-				CPrintToChat(iClient, "{green}[Shop] {default}This command is not available!");
+				CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Command Unavailable");
 		} 
 		else 
-			CPrintToChat(iClient, "{green}[Shop] {default}To access this command, buy a Tag in the Shop!");
+			CPrintToChat(iClient, "{green}[Shop] {default}%t", "Shop Chat Buy Tag");
 	}
 	
 	return Plugin_Handled;
