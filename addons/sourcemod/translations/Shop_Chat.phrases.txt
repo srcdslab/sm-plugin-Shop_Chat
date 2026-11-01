@@ -1,0 +1,204 @@
+"Phrases"
+{
+	"Shop Chat Category"
+	{
+		"en"		"Chat"
+		"fr"		"Chat"
+		"ru"		"Чат"
+		"es"		"Chat"
+		"de"		"Chat"
+		"pt"		"Chat"
+		"chi"		"聊天"
+	}
+	"Shop Chat Name Color"
+	{
+		"en"		"Name color"
+		"fr"		"Couleur du pseudo"
+		"ru"		"Цвет ника"
+		"es"		"Color del nombre"
+		"de"		"Namensfarbe"
+		"pt"		"Cor do nome"
+		"chi"		"名字颜色"
+	}
+	"Shop Chat Text Color"
+	{
+		"en"		"Text color"
+		"fr"		"Couleur du texte"
+		"ru"		"Цвет текста"
+		"es"		"Color del texto"
+		"de"		"Textfarbe"
+		"pt"		"Cor do texto"
+		"chi"		"文字颜色"
+	}
+	"Shop Chat Tag And Color"
+	{
+		"en"		"Tag and Tag color"
+		"fr"		"Tag et couleur du tag"
+		"ru"		"Тег и цвет тега"
+		"es"		"Tag y color del tag"
+		"de"		"Tag und Tag-Farbe"
+		"pt"		"Tag e cor da tag"
+		"chi"		"标签及标签颜色"
+	}
+	"Shop Chat Tag Color"
+	{
+		"en"		"Tag color"
+		"fr"		"Couleur du tag"
+		"ru"		"Цвет тега"
+		"es"		"Color del tag"
+		"de"		"Tag-Farbe"
+		"pt"		"Cor da tag"
+		"chi"		"标签颜色"
+	}
+	"Shop Chat Tag"
+	{
+		"en"		"Tag"
+		"fr"		"Tag"
+		"ru"		"Тег"
+		"es"		"Tag"
+		"de"		"Tag"
+		"pt"		"Tag"
+		"chi"		"标签"
+	}
+	"Shop Chat Name Color Hint"
+	{
+		"en"		"To select a color for your name, write in the chatbox {green}!color"
+		"fr"		"Pour choisir la couleur de votre pseudo, écrivez dans le chat {green}!color"
+		"ru"		"Чтобы выбрать цвет ника, напишите в чат {green}!color"
+		"es"		"Para elegir el color de tu nombre, escribe en el chat {green}!color"
+		"de"		"Um eine Farbe für deinen Namen zu wählen, schreibe in den Chat {green}!color"
+		"pt"		"Para escolher a cor do seu nome, digite no chat {green}!color"
+		"chi"		"要选择名字颜色，请在聊天框中输入 {green}!color"
+	}
+	"Shop Chat Text Color Hint"
+	{
+		"en"		"To select a text color, write in the chat {green}!color"
+		"fr"		"Pour choisir la couleur du texte, écrivez dans le chat {green}!color"
+		"ru"		"Чтобы выбрать цвет текста, напишите в чат {green}!color"
+		"es"		"Para elegir el color del texto, escribe en el chat {green}!color"
+		"de"		"Um eine Textfarbe zu wählen, schreibe in den Chat {green}!color"
+		"pt"		"Para escolher a cor do texto, digite no chat {green}!color"
+		"chi"		"要选择文字颜色，请在聊天框中输入 {green}!color"
+	}
+	"Shop Chat Tag Hint"
+	{
+		"en"		"To select a Tag and its color, write in the chat {green}!color"
+		"fr"		"Pour choisir un tag et sa couleur, écrivez dans le chat {green}!color"
+		"ru"		"Чтобы выбрать тег и его цвет, напишите в чат {green}!color"
+		"es"		"Para elegir un tag y su color, escribe en el chat {green}!color"
+		"de"		"Um einen Tag und seine Farbe zu wählen, schreibe in den Chat {green}!color"
+		"pt"		"Para escolher uma tag e sua cor, digite no chat {green}!color"
+		"chi"		"要选择标签及其颜色，请在聊天框中输入 {green}!color"
+	}
+	"Shop Chat Choose Color"
+	{
+		"en"		"Choose a color:"
+		"fr"		"Choisissez une couleur :"
+		"ru"		"Выберите цвет:"
+		"es"		"Elige un color:"
+		"de"		"Wähle eine Farbe:"
+		"pt"		"Escolha uma cor:"
+		"chi"		"选择颜色："
+	}
+	"Shop Chat Choose Tag"
+	{
+		"en"		"Choose a Tag:"
+		"fr"		"Choisissez un tag :"
+		"ru"		"Выберите тег:"
+		"es"		"Elige un tag:"
+		"de"		"Wähle einen Tag:"
+		"pt"		"Escolha uma tag:"
+		"chi"		"选择标签："
+	}
+	"Shop Chat No Tags"
+	{
+		"en"		"No Tags available"
+		"fr"		"Aucun tag disponible"
+		"ru"		"Нет доступных тегов"
+		"es"		"No hay tags disponibles"
+		"de"		"Keine Tags verfügbar"
+		"pt"		"Nenhuma tag disponível"
+		"chi"		"没有可用的标签"
+	}
+	"Shop Chat Set Tag Help"
+	{
+		"en"		"To set the Tag, type in console:\nsm_myprefix \"your Tag\"\n or write in chat:\n!myprefix \"your Tag\"\n"
+		"fr"		"Pour définir le tag, tapez dans la console :\nsm_myprefix \"votre tag\"\n ou écrivez dans le chat :\n!myprefix \"votre tag\"\n"
+		"ru"		"Чтобы задать тег, введите в консоли:\nsm_myprefix \"ваш тег\"\n или напишите в чат:\n!myprefix \"ваш тег\"\n"
+		"es"		"Para establecer el tag, escribe en la consola:\nsm_myprefix \"tu tag\"\n o escribe en el chat:\n!myprefix \"tu tag\"\n"
+		"de"		"Um den Tag festzulegen, gib in der Konsole ein:\nsm_myprefix \"dein Tag\"\n oder schreibe in den Chat:\n!myprefix \"dein Tag\"\n"
+		"pt"		"Para definir a tag, digite no console:\nsm_myprefix \"sua tag\"\n ou escreva no chat:\n!myprefix \"sua tag\"\n"
+		"chi"		"要设置标签，请在控制台输入：\nsm_myprefix \"你的标签\"\n 或在聊天框中输入：\n!myprefix \"你的标签\"\n"
+	}
+	"Shop Chat Back"
+	{
+		"en"		"Back"
+		"fr"		"Retour"
+		"ru"		"Назад"
+		"es"		"Atrás"
+		"de"		"Zurück"
+		"pt"		"Voltar"
+		"chi"		"返回"
+	}
+	"Shop Chat Use CCC"
+	{
+		"en"		"Please use CCC commands instead!"
+		"fr"		"Veuillez plutôt utiliser les commandes CCC !"
+		"ru"		"Пожалуйста, используйте команды CCC!"
+		"es"		"¡Por favor, usa los comandos de CCC en su lugar!"
+		"de"		"Bitte benutze stattdessen die CCC-Befehle!"
+		"pt"		"Por favor, use os comandos do CCC!"
+		"chi"		"请改用 CCC 命令！"
+	}
+	"Shop Chat Buy To Open Menu"
+	{
+		"en"		"Buy bonuses in the Shop to open this menu!"
+		"fr"		"Achetez des bonus dans le Shop pour ouvrir ce menu !"
+		"ru"		"Купите бонусы в магазине, чтобы открыть это меню!"
+		"es"		"¡Compra bonificaciones en la tienda para abrir este menú!"
+		"de"		"Kaufe Boni im Shop, um dieses Menü zu öffnen!"
+		"pt"		"Compre bônus na loja para abrir este menu!"
+		"chi"		"请在商店购买奖励以打开此菜单！"
+	}
+	"Shop Chat Menu Title"
+	{
+		"en"		"Chat management"
+		"fr"		"Gestion du chat"
+		"ru"		"Управление чатом"
+		"es"		"Gestión del chat"
+		"de"		"Chat-Verwaltung"
+		"pt"		"Gerenciamento do chat"
+		"chi"		"聊天管理"
+	}
+	"Shop Chat Tag Set"
+	{
+		"#format"	"{1:s}"
+		"en"		"You have set yourself a Tag: {green}{1}"
+		"fr"		"Vous avez défini votre tag : {green}{1}"
+		"ru"		"Вы установили себе тег: {green}{1}"
+		"es"		"Has establecido tu tag: {green}{1}"
+		"de"		"Du hast deinen Tag festgelegt: {green}{1}"
+		"pt"		"Você definiu sua tag: {green}{1}"
+		"chi"		"你已将标签设置为：{green}{1}"
+	}
+	"Shop Chat Command Unavailable"
+	{
+		"en"		"This command is not available!"
+		"fr"		"Cette commande n'est pas disponible !"
+		"ru"		"Эта команда недоступна!"
+		"es"		"¡Este comando no está disponible!"
+		"de"		"Dieser Befehl ist nicht verfügbar!"
+		"pt"		"Este comando não está disponível!"
+		"chi"		"此命令不可用！"
+	}
+	"Shop Chat Buy Tag"
+	{
+		"en"		"To access this command, buy a Tag in the Shop!"
+		"fr"		"Pour accéder à cette commande, achetez un tag dans le Shop !"
+		"ru"		"Чтобы использовать эту команду, купите тег в магазине!"
+		"es"		"¡Para acceder a este comando, compra un tag en la tienda!"
+		"de"		"Kaufe einen Tag im Shop, um diesen Befehl zu nutzen!"
+		"pt"		"Para acessar este comando, compre uma tag na loja!"
+		"chi"		"要使用此命令，请在商店购买标签！"
+	}
+}
