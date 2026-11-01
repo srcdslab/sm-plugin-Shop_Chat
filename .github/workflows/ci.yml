@@ -46,10 +46,11 @@ jobs:
       - name: Create package
         run: |
           set -euo pipefail
-          mkdir -p /tmp/package/addons/sourcemod/plugins
+          mkdir -p /tmp/package/addons/sourcemod/plugins /tmp/package/addons/sourcemod/configs/shop
           cp addons/sourcemod/plugins/*.smx /tmp/package/addons/sourcemod/plugins/
           cp -R addons/sourcemod/translations /tmp/package/addons/sourcemod/
-          cp -R addons/sourcemod/configs /tmp/package/addons/sourcemod/
+          # The plugin reads its configs from configs/shop/
+          cp addons/sourcemod/configs/*.cfg /tmp/package/addons/sourcemod/configs/shop/
 
       - name: Upload build archive for test runners
         uses: actions/upload-artifact@v7
