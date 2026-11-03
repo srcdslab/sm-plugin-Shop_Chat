@@ -66,7 +66,7 @@ public Plugin myinfo =
 	name = "[Shop] Name/Prefix/Text Color",
 	description = "Grant player to buy name/prefix/text color",
 	author = "R1KO, maxime1907",
-	version = "2.2.8",
+	version = "2.2.9",
 	url = "http://hlmod.ru"
 }
 
