@@ -314,16 +314,52 @@ public bool OnItemDisplay(int iClient, CategoryId category_id, const char[] cate
 	return true;
 }
 
-public void Shop_OnAuthorized(int iClient)
+public void OnClientDisconnect(int iClient)
 {
 	for(int i = 0; i < 3; i++)
 	{
 		g_sColors[iClient][i][0] = '\0';
 		g_bUsed[iClient][i] = false;
-		if(Shop_IsClientHasItem(iClient, id[i])) 
-			g_bUsed[iClient][i] = Shop_IsClientItemToggled(iClient, id[i]);
 	}
 	g_sPrefix[iClient][0] = '\0';
+}
+
+// Shop core toggles the client's items on (calling OnXxxUsed) before this forward fires,
+// so this must not clear what those callbacks just loaded.
+public void Shop_OnAuthorized(int iClient)
+{
+	for(int i = 0; i < 3; i++)
+	{
+		g_bUsed[iClient][i] = Shop_IsClientHasItem(iClient, id[i]) && Shop_IsClientItemToggled(iClient, id[i]);
+	}
+	LoadClientPrefs(iClient);
+}
+
+// Shop's DB and clientprefs load asynchronously: reload once the cookies are cached
+public void OnClientCookiesCached(int iClient)
+{
+	LoadClientPrefs(iClient);
+}
+
+void LoadClientPrefs(int iClient)
+{
+	if (!AreClientCookiesCached(iClient))
+		return;
+
+	for(int i = 0; i < 3; i++)
+	{
+		if (!g_bUsed[iClient][i])
+			continue;
+
+		g_hCookie[i].Get(iClient, g_sColors[iClient][i], sizeof(g_sColors[][]));
+		EditColor(g_sColors[iClient][i], sizeof(g_sColors[][]));
+	}
+
+	if (g_bUsed[iClient][PREFIX_COLOR])
+	{
+		g_hCookie[PREFIX].Get(iClient, g_sPrefix[iClient], sizeof(g_sPrefix[]));
+		if(g_sPrefix[iClient][0] == '\0') strcopy(g_sPrefix[iClient], sizeof(g_sPrefix[]), "Tag");
+	}
 }
 
 public ShopAction OnNameColorUsed(int iClient, CategoryId category_id, const char[] category, ItemId item_id, const char[] item, bool isOn, bool elapsed)
